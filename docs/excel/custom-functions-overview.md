@@ -42,7 +42,7 @@ function ADD42 (a, b) {
 }
 ```
 The following code in customfunctions.json declares the metadata for the same function:
-
+ ```js
 {
     call: ADD42,
     description: "Adds 42 to the sum of two numbers",
