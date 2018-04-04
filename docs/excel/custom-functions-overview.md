@@ -27,24 +27,24 @@ See the Known Issues section at the end of this article, which includes current 
 
 In the cloned sample repo, you’ll see the following files:
 
--   *customfunctions.js*, which contains:
-
-    -   The custom function code to add to Excel.
-    -   The registration code to connect your custom function to Excel. Registration makes your custom functions appear in the list of available functions displayed when users type in cells.
--   *customfunctions.html*, which provides a &lt;Script&gt; reference to *customfunctions.js*. This file does not display UI in Excel.
--   *manifest.xml*, which tells Excel the location of your HTML and JS files needed to run custom functions.
+-   *customfunctions.js*, which contains the custom function code to add to Excel.
+-   *customfunctions.json*, which contains the registration code to connect your custom function to Excel. Registration makes your custom functions appear in the list of available functions displayed when users type in cells.
+-   *customfunctions.html*, which provides a &lt;Script&gt; reference to the JS file. This file does not display UI in Excel.
+-   *manifest.xml*, which tells Excel the location of your HTML, JS, and JSON files needed to run custom functions.
 
 ### JavaScript file (*customfunctions.js*)
 
-The following code in customfunctions.js declares the custom function `add42`, and then registers the function in Excel.
+The following code in customfunctions.js declares the custom function `ADD42`.
 
 ```js
-function add42 (a, b) {
+function ADD42 (a, b) {
     return a + b + 42;
 }
+```
+The following code in customfunctions.json declares the metadata for the same function:
 
-Excel.Script.customFunctions["CONTOSO"]["ADD42"] = {
-    call: add42,
+{
+    call: ADD42,
     description: "Adds 42 to the sum of two numbers",
     helpUrl: "https://www.contoso.com/help.html",
     result: {
@@ -63,23 +63,19 @@ Excel.Script.customFunctions["CONTOSO"]["ADD42"] = {
         valueType: Excel.CustomFunctionValueType.number,
         valueDimensionality: Excel.CustomFunctionDimensionality.scalar,
     }],
-    options:{ batch: false, stream: false }
-};
+    options:{ sync:true }
+}
 
-Excel.run(function(ctx) {
-    ctx.workbook.customFunctions.addAll();
-});
 ```
 
-**Registration** of the custom function uses the `Excel.Script.customFunctions["CONTOSO"]["ADD42"]` code block. You need the following parameters to register the function in Excel:
+You need the following parameters to register the function in Excel:
 
--   Prefix and function name: The first value in `Excel.Script.customFunctions` is the prefix (in this case, CONTOSO is the prefix). The second value in `Excel.Script.customFunctions` is the function name (in this case ADD42 is the function name). In Excel, the prefix and the function name are separated using a period: to use your custom function, combine the function's prefix (CONTOSO) with the function's name (ADD42) and enter `=CONTOSO.ADD42` into a cell. By convention, prefixes and function names use upper case letters. The prefix is intended to be used as an identifier for your add-in.
--   `call`: Defines the JavaScript function to call (for example, `add42`). The name of the JavaScript function does not need to match the name that you register in Excel.
+-   Function name: The "name" defines the function name (in this case ADD42 is the function name). The prefix (like "CONTOSO", which appears before the name) is defined in the manifest. The prefix and the function name are separated using a period: to use your custom function, combine the function's prefix (CONTOSO) with the function's name (ADD42) and enter `=CONTOSO.ADD42` into a cell. By convention, prefixes and function names should use upper case letters. The prefix is intended to be used as an identifier for your add-in.
 -   `description`: The description appears in the autocomplete menu in Excel.
 -   `helpUrl`: When the user requests help for a function, Excel opens a task pane and displays the web page found at this URL.
 -   `result`: Defines the type of information returned by the function to Excel.
 
-    -   `resultType`: Your function can return either a `"string"` or a `"number"` (also used for dates and currencies). For more information see &lt;&lt;LINK&gt;&gt;.
+    -   `resultType`: Your function can return a `"string"`, `"number"`, or `"boolean"`. For more information see &lt;&lt;LINK&gt;&gt;.
 
     -   resultDimensionality: Your function can return either a single (`"scalar"`) value or a `"matrix"` of values. When returning a matrix of values, your function returns an array, where each array element is another array that represents a row of values. For more information, see &lt;&lt;LINK&gt;&gt;. The following example returns a 3-row, 2-column matrix of values from a custom function.
 
@@ -108,28 +104,34 @@ The following example in manifest.xml allows Excel to locate the code for your f
 
 <VersionOverrides xmlns="http://schemas.microsoft.com/office/taskpaneappversionoverrides" xsi:type="VersionOverridesV1\_0">
 
-    <Hosts>
-        <Host xsi:type="Workbook">
-            <AllFormFactors>
-                <ExtensionPoint xsi:type="CustomFunctions">
-                    <Script>
-                        <SourceLocation resid="scriptURL" />
-                        <!— Required. The Developer Preview does not use the Script element.-->
-                    </Script>
-                    <Page>
-                        <SourceLocation resid="pageURL"/>
-                    </Page>
-                </ExtensionPoint>
-            </AllFormFactors>
-        </Host>
-    </Hosts>
-
-    <Resources>
-        <bt:Urls>
-            <bt:Url id="scriptURL" DefaultValue="https://www.contoso.com/addin/customfunctions.js" />
-            <bt:Url id="pageURL" DefaultValue="https://www.contoso.com/addin/customfunctions.html" />
-        </bt:Urls>
-    </Resources>
+        <Hosts>
+			<Host xsi:type="Workbook">
+				<AllFormFactors>
+					<ExtensionPoint xsi:type="CustomFunctions">
+						<Script>
+							<SourceLocation resid="residjs" />
+						</Script>
+						<Page>
+							<SourceLocation resid="residhtml"/>
+						</Page>
+						<Metadata>
+							<SourceLocation resid="residjson" />
+						</Metadata>
+						<Namespace resid="residNS" />
+					</ExtensionPoint>
+				</AllFormFactors>
+			</Host>
+		</Hosts>
+		<Resources>
+			<bt:Urls>
+				<bt:Url id="residjson" DefaultValue="http://127.0.0.1:8080/customfunctions.json" />
+				<bt:Url id="residjs" DefaultValue="http://127.0.0.1:8080/customfunctions.js" />
+				<bt:Url id="residhtml" DefaultValue="http://127.0.0.1:8080/customfunctions.html" />
+			</bt:Urls>
+			<bt:ShortStrings>
+				<bt:String id="residNS" DefaultValue="CONTOSO" />
+			</bt:ShortStrings>
+		</Resources>
 
 </VersionOverrides>
 
@@ -137,10 +139,11 @@ The following example in manifest.xml allows Excel to locate the code for your f
 
 The previous code specifies:
 
--   A &lt;`Script`&gt; element, which is required but not used in the Developer Preview.
--   A &lt;`Page`&gt; element, which links to the HTML page of your add-in. The HTML page includes a &lt;Script&gt; reference to the JavaScript file (*customfunctions.js*) that contains the custom function and registration code. The HTML page is a hidden page and is never displayed in the UI.
+-   A &lt;`Script`&gt; element, which is only used for synchronous functions during the developer preview.
+-   A &lt;`Page`&gt; element, which links to the HTML page of your add-in. The HTML page includes a &lt;Script&gt; reference to the JavaScript file (*customfunctions.js*) that contains the custom function and registration code. The HTML page is a hidden page and is never displayed in the UI. It's used for asynchronous functions during the developer preview
+-   A &lt;`Metadata`&gt; element pointing to the JSON file.
 
-## Asynchronous functions
+## Asynchronous functions and synchronous functions
 
 If your custom function retrieves data from the web, you need to make an asynchronous call to fetch it. When calling external web services, your custom function must:
 
@@ -160,6 +163,8 @@ function getTemperature(thermometerID){
 }
 ```
 
+Designate functions as asynchronous by setting the option `"sync": false` in the metadata file. During the developer preview, asynchronous functions run in a separate browser process, whereas synchronous functions run in the Excel process, allowing them to run much faster and to run concurrently.
+
 ## Streamed functions
 
 Streamed custom functions let you output data to cells repeatedly over time, without waiting for Excel or users to request recalculations. For example, the `incrementValue` custom function in the following code adds a number to the result every second, and Excel displays each new value automatically using the `setResult` callback. To see the registration code used with `incrementValue`, read the *customfunctions.js* file.
@@ -174,7 +179,7 @@ function incrementValue(increment, caller){
 }
 ```
 
-For streamed functions, the final parameter, `caller`, is never specified in your registration code, and it does not display in the autocomplete menu to Excel users when they enter the function. It’s an object that contains a `setResult` callback function that’s used to pass data from the function to Excel to update the value of a cell. In order for Excel to pass the `setResult` function in the `caller` object, you must declare support for streaming during your function registration by setting the parameter `stream` to `true`.
+For streamed functions, the final parameter, `caller`, is never specified in your registration code, and it does not display in the autocomplete menu to Excel users when they enter the function. It’s an object that contains a `setResult` callback function that’s used to pass data from the function to Excel to update the value of a cell. In order for Excel to pass the `setResult` function in the `caller` object, you must declare support for streaming during your function registration by setting the parameter `stream` to `true` in the metadata file.
 
 ## Cancellation
 
@@ -264,15 +269,11 @@ function secondHighestTemp(temperatures){
 
 The following features aren't yet supported in the Developer Preview.
 
--   Batching, which allows you to aggregate multiple calls to the same function to improve performance.
-
 -   Help URLs and parameter descriptions are not yet used by Excel.
 
--   Publishing add-ins to the Office Store or Office 365 centralized deployment that use custom functions.
+-   Custom functions are not available on Excel for mobile clients or Excel Online.
 
--   Custom functions are not available on Excel on Mac, Excel for iOS, and Excel Online.
-
--   Currently, add-ins rely on a hidden browser process to run custom functions. In the future, JavaScript will run directly on some platforms to ensure custom functions are faster and use less memory. Additionally, the HTML page referenced by the &lt;Page&gt; element in the manifest won’t be needed for most platforms because Excel will run the JavaScript directly. To prepare for this change, ensure your custom functions do not use the webpage DOM.
+-   Currently, add-ins rely on a hidden browser process to run asynchronous custom functions. In the future, JavaScript will run directly on some platforms to ensure custom functions are faster and use less memory. Additionally, the HTML page referenced by the &lt;Page&gt; element in the manifest won’t be needed for most platforms because Excel will run the JavaScript directly. To prepare for this change, ensure your custom functions do not use the webpage DOM.
 
 ## Changelog
 
