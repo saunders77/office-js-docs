@@ -104,59 +104,58 @@ The following example in manifest.xml allows Excel to locate the code for your f
 ```xml
 
 <VersionOverrides xmlns="http://schemas.microsoft.com/office/taskpaneappversionoverrides" xsi:type="VersionOverridesV1\_0">
-
         <Hosts>
-			<Host xsi:type="Workbook">
-				<AllFormFactors>
-					<ExtensionPoint xsi:type="CustomFunctions">
-						<Script>
-							<SourceLocation resid="residjs" />
-						</Script>
-						<Page>
-							<SourceLocation resid="residhtml"/>
-						</Page>
-						<Metadata>
-							<SourceLocation resid="residjson" />
-						</Metadata>
-						<Namespace resid="residNS" />
-					</ExtensionPoint>
-				</AllFormFactors>
-			</Host>
-		</Hosts>
-		<Resources>
-			<bt:Urls>
-				<bt:Url id="residjson" DefaultValue="http://127.0.0.1:8080/customfunctions.json" />
-				<bt:Url id="residjs" DefaultValue="http://127.0.0.1:8080/customfunctions.js" />
-				<bt:Url id="residhtml" DefaultValue="http://127.0.0.1:8080/customfunctions.html" />
-			</bt:Urls>
-			<bt:ShortStrings>
-				<bt:String id="residNS" DefaultValue="CONTOSO" />
-			</bt:ShortStrings>
-		</Resources>
-
+		<Host xsi:type="Workbook">
+			<AllFormFactors>
+				<ExtensionPoint xsi:type="CustomFunctions">
+					<Script>
+						<SourceLocation resid="residjs" />
+					</Script>
+					<Page>
+						<SourceLocation resid="residhtml"/>
+					</Page>
+					<Metadata>
+						<SourceLocation resid="residjson" />
+					</Metadata>
+					<Namespace resid="residNS" />
+				</ExtensionPoint>
+			</AllFormFactors>
+		</Host>
+	</Hosts>
+	<Resources>
+		<bt:Urls>
+			<bt:Url id="residjson" DefaultValue="http://127.0.0.1:8080/customfunctions.json" />
+			<bt:Url id="residjs" DefaultValue="http://127.0.0.1:8080/customfunctions.js" />
+			<bt:Url id="residhtml" DefaultValue="http://127.0.0.1:8080/customfunctions.html" />
+		</bt:Urls>
+		<bt:ShortStrings>
+			<bt:String id="residNS" DefaultValue="CONTOSO" />
+		</bt:ShortStrings>
+	</Resources>
 </VersionOverrides>
 
 ```
 
 The previous code specifies:
 
--   A &lt;`Script`&gt; element, which is only used for synchronous functions during the developer preview.
--   A &lt;`Page`&gt; element, which links to the HTML page of your add-in. The HTML page includes a &lt;Script&gt; reference to the JavaScript file (*customfunctions.js*) that contains the custom function and registration code. The HTML page is a hidden page and is never displayed in the UI. It's used for asynchronous functions during the developer preview
+-   A &lt;`Script`&gt; element, which is only used for synchronous functions (later it will be used for asynchronous functions as well).
+-   A &lt;`Page`&gt; element, which links to the HTML page of your add-in. The HTML page includes a &lt;Script&gt; reference to the JavaScript file (*customfunctions.js*) that contains the custom function and registration code. The HTML page is a hidden page and is never displayed in the UI. It's used for asynchronous functions and Excel Online during the developer preview.
 -   A &lt;`Metadata`&gt; element pointing to the JSON file.
+-   A &lt;`Namespace`&gt; element declaring the prefix for all custom functions in the add-in.
 
-## Asynchronous functions and synchronous functions
+## Asynchronous and synchronous functions
 
 If your custom function retrieves data from the web, you need to make an asynchronous call to fetch it. When calling external web services, your custom function must:
 
 1.   Return a JavaScript Promise to Excel.
-2.   Make the http request to call the external service.
+2.   Make the HTTP request to call the external service.
 3.   Resolve the promise using the `setResult` callback. `setResult` sends the value to Excel.
 
 The following code shows an example of a custom function that retrieves the temperature of a thermometer.
 
 ```js
 function getTemperature(thermometerID){
-    return new OfficeExtension.Promise(function(setResult, setError){
+    return new OfficeExtension.Promise(function(setResult){
         sendWebRequestExample(thermometerID, function(data){
             setResult(data.temperature);
         });
@@ -164,7 +163,7 @@ function getTemperature(thermometerID){
 }
 ```
 
-Designate functions as asynchronous by setting the option `"sync": false` in the metadata file. During the developer preview, asynchronous functions run in a separate browser process, whereas synchronous functions run in the Excel process, allowing them to run much faster and to run concurrently.
+Designate functions as asynchronous by setting the option `"sync": false` in the metadata file. During the developer preview, asynchronous functions run in a separate browser process, whereas synchronous functions run in the Excel process, allowing them to run much faster and to run concurrently with each other.
 
 ## Streamed functions
 
@@ -204,6 +203,8 @@ function incrementValue(increment, caller){
     }
 }
 ```
+
+You must implement a cancellation handler for every streaming function. On the other hand, synchronous functions cannot be canceled. Asynchronous, non-streaming functions may or may not be cancelable; it's up to you.
 
 ## Saving state
 
