@@ -1,6 +1,6 @@
 # Create custom functions in Excel (Preview)
 
-Custom functions (similar to user-defined functions, or UDFs), allow developers to add any JavaScript function to Excel using an add-in. Users can then access custom functions like any other native function in Excel (like =SUM()). This article explains how to create custom functions in Excel.
+Custom functions (similar to user-defined functions, or UDFs), allow developers to add any JavaScript function to Excel using an add-in. Users can then access custom functions like any other native function in Excel (such as =SUM()). This article explains how to create custom functions in Excel.
 
 The following illustration shows you how custom functions work in the Excel UI.
 
@@ -41,6 +41,9 @@ function ADD42 (a, b) {
     return a + b + 42;
 }
 ```
+
+### JSON file (*customfunctions.json*)
+
 The following code in customfunctions.json declares the metadata for the same function:
  ```js
 {
@@ -70,7 +73,7 @@ The following code in customfunctions.json declares the metadata for the same fu
 
 You need the following parameters to register the function in Excel:
 
--   Function name: The "name" defines the function name (in this case ADD42 is the function name). The prefix (like "CONTOSO", which appears before the name) is defined in the manifest. The prefix and the function name are separated using a period: to use your custom function, combine the function's prefix (CONTOSO) with the function's name (ADD42) and enter `=CONTOSO.ADD42` into a cell. By convention, prefixes and function names should use upper case letters. The prefix is intended to be used as an identifier for your add-in.
+-   Function name: The `name` property defines the function name (in this case ADD42 is the function name). The prefix (like CONTOSO), which appears before the name, is defined in the manifest. The prefix and the function name are separated using a period: to use your custom function, combine the function's prefix (CONTOSO) with the function's name (ADD42) and enter `=CONTOSO.ADD42` into a cell. By convention, prefixes and function names should use uppercase letters. The prefix is intended to be used as an identifier for your add-in.
 -   `description`: The description appears in the autocomplete menu in Excel.
 -   `helpUrl`: When the user requests help for a function, Excel opens a task pane and displays the web page found at this URL.
 -   `result`: Defines the type of information returned by the function to Excel.
@@ -91,8 +94,6 @@ return [["first","row"],["second","row"],["third","row"]];
     -   `valueDimensionality`: A `"scalar"` value or `"matrix"` of values, similar to the resultDimensionality property described previously. Matrix-type parameters allow the user to select ranges larger than a single cell.
 
 -   `options`: enables special types of custom functions that are described in more detail later in this article.
-
-To complete registration of all functions defined using `Excel.Script.customFunctions`, ensure you call `CustomFunctions.addAll()`.
 
 After registration, custom functions are available in all workbooks (not only the one where the add-in ran initially) for a user. The functions are displayed in the autocomplete menu when the user starts typing it.
 
