@@ -11,24 +11,7 @@
 # Extension points for Excel only
 - **CustomFunctions** - a custom function written in JavaScript for Excel.
 
-The following examples show how to use the **ExtensionPoint** element with the **CustomFunctions** attribute value, and the child elements to be used.
-
-```XML
-<ExtensionPoint xsi:type="CustomFunctions">
-  <!-- In <Resources><bt:Urls> create IDs for the full URLs of the JavaScript, UI-less parent page, and function registation JSON -->
-	<Script>    
-		<SourceLocation resid="scriptURL" />
-	</Script>
-	<Page>
-		<SourceLocation resid="pageURL"/>
-	</Page>
-  <Metadata>
-    <SourceLocation resid="jsonUrl" />
-  </Metadata>
-  <!-- In <Resources><bt:ShortStrings> create a namespace string that will be prepended to your function names in Excel -->
-  <Namespace resid="customFunctionNamespace" />
-</ExtensionPoint>
-```
+[This XML code sample](https://github.com/saunders77/dogfoodcf/blob/master/customfunctions.xml) shows how to use the **ExtensionPoint** element with the **CustomFunctions** attribute value, and the child elements to be used.
 
 ## Extension points for Word, Excel, PowerPoint, and OneNote add-in commands
 
