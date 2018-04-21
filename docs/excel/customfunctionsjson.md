@@ -30,24 +30,23 @@ The `options` object configures how Excel processes the function. Here are its p
 
 ## The parameters array
 
-The `parameters` property is an array of objects. Each of these objects represents a parameter. The objects have the following properties.
+The `parameters` property is an array of objects. Each of these objects represents a parameter. Here are its properties:
 
 |  Property  |  Data Type  |  Required?  |  Description  |
 |:-----|:-----|:-----|:-----|
 |  `description`  |  string  |  No |  A description of the parameter.  |
-|  `dimensionality`  |  string  |  Yes  |  Must be either "scalar", meaning a non-array value, or "matrix", meaning an array of any number of dimensions.  |
-|  `name`  |  string  |  Yes  |  The name of the parameter.  |
-|  `optional`  |  boolean  |  No, default is `false`.  |  If `true`, the parameter is not required.  |
-|  `type`  |  string  |  Yes  |  The data type of the parameter. Must be "boolean", "isodate", "number", or "string".  |
+|  `dimensionality`  |  string  |  Yes  |  Must be either "scalar", meaning a non-array value, or "matrix", meaning an array of row arrays.  |
+|  `name`  |  string  |  Yes  |  The name of the parameter. This name is displayed in Excel's IntelliSense.  |
+|  `type`  |  string  |  Yes  |  The data type of the parameter. Must be "boolean", "number", or "string".  |
 
 ## The result object
 
-The `results` property provides metadata about the value returned from the function. It has the following properties.
+The `results` property provides metadata about the value returned from the function. Here are its properties:
 
 |  Property  |  Data Type  |  Required?  |  Description  |
 |:-----|:-----|:-----|:-----|
-|  `dimensionality`  |  string  |  No  |  Must be either "scalar", meaning a non-array value, or "matrix", meaning an array of any number of dimensions.  |
-|  `type`  |  string  |  Yes  |  The data type of the parameter. Must be "boolean", "isodate", "number", or "string".  |
+|  `dimensionality`  |  string  |  No  |  Must be either "scalar", meaning a non-array value, or "matrix", meaning an array of row arrays.  |
+|  `type`  |  string  |  Yes  |  The data type of the parameter. Must be "boolean", "number", or "string".  |
 
 ## Example
 
@@ -77,7 +76,7 @@ The following is an example of a metadata file for custom functions.
 			}
 		},
 		{
-			"name": "ADD42WAIT", 
+			"name": "ADD42ASYNC", 
 			"description":  "asynchronously wait 250ms, then add 42",
 			"helpUrl": "http://dev.office.com",
 			"result": {
