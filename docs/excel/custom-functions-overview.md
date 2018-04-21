@@ -214,16 +214,16 @@ The following code shows an implementation of the previous temperature-streaming
 
 -   **Saving data.** `refreshTemperature` is a streamed function that reads the temperature of a particular thermometer every second. New temperatures are saved in the savedTemperatures variable.
 
--   **Using saved data.** `streamTemperature` updates the temperature values displayed in the Excel UI every second. Temperatures are read from `savedTemperature`, and then sent to the Excel UI using `setResult`. Users may call `streamTemperature` from several cells in the Excel UI. Each call to `streamTemperature` will read data from `savedTemperatures`.
+-   **Using saved data.** `STREAMTEMPERATURE` updates the temperature values displayed in the Excel UI every second. Temperatures are read from `savedTemperatures`, and then sent to the Excel UI using `setResult`. Users may call `streamTemperature` from several cells in the Excel UI. Each call to `STREAMTEMPERATURE` will read data from `savedTemperatures`.
 
-> In this case, we register `streamTemperature` as the custom function in Excel.
+ In this case, we register `STREAMTEMPERATURE` as the custom function in Excel.
 
 ```js
 var savedTemperatures{};
 
 function streamTemperature(thermometerID, caller){ 
      if(!savedTemperatures[thermometerID]){
-         refreshTemperatures(thermometerID);
+         refreshTemperatures(thermometerID); // starts fetching temperatures if the thermometer hasn't been read yet
      }
 
      function getNextTemperature(){
@@ -247,19 +247,19 @@ function refreshTemperature(thermometerID){
 
 Your custom function can take a range of data as a parameter, or you can return a range of data from a custom function.
 
-For example, suppose that your function returns the second highest temperature from a range of temperature values stored in Excel. The following function takes the parameter `temperatures`, which is an `Excel.CustomFunctionDimensionality.matrix` parameter type.
+For example, suppose that your function returns the second highest value from a range of numbers stored in Excel. The following function takes the parameter `values`, which is an `Excel.CustomFunctionDimensionality.matrix` parameter type.
 
 ```js
-function secondHighestTemp(temperatures){ 
-     var highest = -273, secondHighest = -273;
-     for(var i = 0; i < temperatures.length; i++){
-         for(var j = 0; j < temperatures[i].length; j++){
-             if(temperatures[i][j] <= highest){
+function SECONDHIGHEST(values){ 
+     var highest = values[0][0], secondHighest = values[0][0];
+     for(var i = 0; i < values.length; i++){
+         for(var j = 1; j < values[i].length; j++){
+             if(values[i][j] >= highest){
                  secondHighest = highest;
-                 highest = temperatures[i][j];
+                 highest = values[i][j];
              }
-             else if(temperatures[i][j] <= secondHighest){
-                 secondHighest = temperatures[i][j];
+             else if(values[i][j] >= secondHighest){
+                 secondHighest = values[i][j];
              }
          }
      }
@@ -273,7 +273,7 @@ The following features aren't yet supported in the Developer Preview.
 
 -   Help URLs and parameter descriptions are not yet used by Excel.
 
--   Custom functions are not available on Excel for mobile clients or Excel Online.
+-   Custom functions are not available on Excel for mobile clients.
 
 -   Currently, add-ins rely on a hidden browser process to run asynchronous custom functions. In the future, JavaScript will run directly on some platforms to ensure custom functions are faster and use less memory. Additionally, the HTML page referenced by the &lt;Page&gt; element in the manifest won’t be needed for most platforms because Excel will run the JavaScript directly. To prepare for this change, ensure your custom functions do not use the webpage DOM.
 
@@ -282,3 +282,4 @@ The following features aren't yet supported in the Developer Preview.
 - **Nov 7, 2017**: Shipped the custom functions preview and samples
 - **Nov 20, 2017**: Fixed compatibility bug for those using builds 8801 and later
 - **Nov 28, 2017**: Shipped support for cancellation on asynchronous functions (requires change for streaming functions)
+- **May 7, 2018**: Shipped support for Mac, Excel Online, and synchronous functions running in-proc
