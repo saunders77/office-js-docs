@@ -1,29 +1,31 @@
-# Custom Function metadata
+# Custom function metadata
 
-When you include [custom functions](https://docs.microsoft.com/en-us/office/dev/add-ins/excel/custom-functions-overview.md) in an Excel Add-in, you must host a JSON file that contains metadata about the functions (in addition to hosting a JavaScript file with the functions and a UI-less HTML file to serve as the parent of the JavaScript file). This article describes the format of the JSON file with examples.
+When you include [custom functions](https://docs.microsoft.com/en-us/office/dev/add-ins/excel/custom-functions-overview.md) in an Excel add-in, you must host a JSON file that contains metadata about the functions (in addition to hosting a JavaScript file with the functions and a UI-less HTML file to serve as the parent of the JavaScript file). This article describes the format of the JSON file with examples.
+
+A complete sample JSON file is available [here](https://github.com/saunders77/dogfoodcf/blob/master/customfunctions.json).
 
 ## The functions array
 
-The metadata is a JSON object that contains a single `functions` property whose value is an array of objects. Each of these objects represents one custom function. The following are it's properties:
+The metadata is a JSON object that contains a single `functions` property whose value is an array of objects. Each of these objects represents one custom function. Here are its properties:
 
 |  Property  |  Data Type  |  Required?  |  Description  |
 |:-----|:-----|:-----|:-----|
-|  `description`  |  string  |  No  |  A description of the function that will appear in the Excel UI. For example, "Converts a Celsius value to Fahrenheit". |
+|  `description`  |  string  |  No  |  A description of the function that appears in the Excel UI. For example, "Converts a Celsius value to Fahrenheit". |
 |  `helpUrl`  |  string  |   No  |  URL where your users can get help about the function. (It is displayed in a taskpane.) For example, "http://contoso.com/help/convertcelsiustofahrenheit.html"  |
-|  `name`  |  string  |  Yes  |  This is the name of the function as it will appear (prepended with a namespace) in the Excel UI when a user is selecting a function. It should be the same as the function's name where it is defined in the JavaScript, except that it should be all upper-case to conform with Excel function style. For example, if the function is `convertCelsiusToFahrenheit`, the name should be "CONVERTCELSIUSTOFAHRENHEIT". |
+|  `name`  |  string  |  Yes  |  The name of the function as it will appear (prepended with a namespace) in the Excel UI when a user is selecting a function. It should be the same as the function's name where it is defined in the JavaScript. |
 |  `options`  |  object  |  No  |  Configure how Excel processes the function. See below for details. |
 |  `parameters`  |  array  |  No  |  Metadata about the parameters to the function. See below for details. |
 |  `result`  |  object  |  Yes  |  Metadata about the value returned by the function. See below for details. |
 
 ## The options object
 
-The `options` object can configure how Excel processes the function. It has the following properties.
+The `options` object configures how Excel processes the function. Here are its properties:
 
 |  Property  |  Data Type  |  Required?  |  Description  |
 |:-----|:-----|:-----|:-----|
-|  `cancelable`  |  boolean  |  No, default is `false`.  |  If `true`, Excel calls the `onCancelled` handler whenever the user takes an action that has the effect of canceling the function; for example, manually triggering recalculation or editing the cell that references the function. To use this option, the last parameter of the function must be an object that represents the caller. (Do ***not*** register this parameter in the `parameters` property). In the body of the function, a handler must be assigned to the `caller.onCancelled` member. Note, `cancelable` and `sync` may not both be `true`.  |
-|  `stream`  |  boolean  |  No, default is `false`.  |  If `true`, the output is written repeatedly to the cell. Useful for rapidly changing data sources, such as a stock price ticker. To use this option, the last parameter of the function must be an object that represents the caller. (Do ***not*** register this parameter in the `parameters` property). The function should have no `return` statement. Instead, the result value is passed to the `caller.setResult` method. Note, `stream` and `sync` may not both be `true`.|
-|  `sync`  |  boolean  |  No, default is `false`  |  If `true`, the function runs synchronously. Note, `sync`  may not be `true` if either `cancelable` or `stream` are `true`.  |
+|  `cancelable`  |  boolean  |  No, default is `false`.  |  If `true`, Excel calls the `onCanceled` handler whenever the user takes an action that has the effect of canceling the function; for example, manually triggering recalculation or editing a cell that is referenced by the function. If you use this option, Excel will call the JavaScript function with an additional `caller` parameter. (Do ***not*** register this parameter in the `parameters` property). In the body of the function, a handler must be assigned to the `caller.onCanceled` member. Note, `cancelable` and `sync` cannot both be `true`.  |
+|  `stream`  |  boolean  |  No, default is `false`.  |  If `true`, the function can output repeatedly to the cell even when invoked only once. This option is useful for rapidly-changing data sources, such as a stock price. If you use this option, Excel will call the JavaScript function with an additional `caller` parameter. (Do ***not*** register this parameter in the `parameters` property). The function should have no `return` statement. Instead, the result value is passed as the argument of the `caller.setResult` callback method. Note, `stream` and `sync` may not both be `true`.|
+|  `sync`  |  boolean  |  No, default is `false`  |  If `true`, the function runs synchronously and it must return a value. If `false`, the function runs asynchronously and it must return a `OfficeExtension.Promise` object. Note, `sync`  may not be `true` if either `cancelable` or `stream` are `true`.  |
 |  `volatile`  |  boolean  |  No, default is `false`.  |  If `true`, the function re-executes each time calculation runs in the workbook. |
 
 ## The parameters array
