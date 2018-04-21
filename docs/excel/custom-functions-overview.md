@@ -277,6 +277,8 @@ The following features aren't yet supported in the Developer Preview.
 
 -   Currently, add-ins rely on a hidden browser process to run asynchronous custom functions. In the future, JavaScript will run directly on some platforms to ensure custom functions are faster and use less memory. Additionally, the HTML page referenced by the &lt;Page&gt; element in the manifest won’t be needed for most platforms because Excel will run the JavaScript directly. To prepare for this change, ensure your custom functions do not use the webpage DOM.
 
+-   Volatile functions (those which recalculate automatically whenever unrelated data changes in the spreadsheet) are not yet supported.
+
 ## Changelog
 
 - **Nov 7, 2017**: Shipped the custom functions preview and samples
